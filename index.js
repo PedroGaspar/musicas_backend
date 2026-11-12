@@ -16,21 +16,82 @@ const sql = mysql2.createPool({
     database: process.env.NOME_BANCO
 })
 
+
 app.get("/", (request, response) => {
+
     const comandoSelect = "SELECT * FROM musicas_pedro_gaspar21timc";
 
     sql.query(comandoSelect, (error, data) => {
+
         if (error) {
             console.log(error);
-            return;
+            return response.status(500).json(error);
         }
 
         response.json(data);
     });
 });
 
+app.put("/:id", (request, response) => {
+
+    const id = request.params.id;
+
+    const { titulo, artista, genero, ano, duracao } = request.body;
+
+    const comandoUpdate = `
+        UPDATE musicas_pedro_gaspar21timc
+        SET titulo = ?, artista = ?, genero = ?, ano = ?, duracao = ?
+        WHERE id = ?
+    `;
+
+    sql.query(
+        comandoUpdate,
+        [titulo, artista, genero, ano, duracao, id],
+        (error, data) => {
+
+            if (error) {
+                console.log(error);
+                return response.status(500).json(error);
+            }
+
+            response.json({
+                mensagem: "Música atualizada com sucesso!"
+            });
+        }
+    );
+});
+
+
+app.post("/cadastrar", (request, response) => {
+
+    const { titulo, artista, genero, ano, duracao } = request.body;
+
+    const comandoInsert = `
+        INSERT INTO musicas_pedro_gaspar21timc
+        (titulo, artista, genero, ano, duracao)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+
+    sql.query(
+        comandoInsert,
+        [titulo, artista, genero, ano, duracao],
+        (error) => {
+
+            if (error) {
+                console.log(error);
+                return response.status(500).json(error);
+            }
+
+            response.status(201).json({
+                mensagem: "Música cadastrada com sucesso!"
+            });
+        }
+    );
+});
+
+
 app.listen(3001, () => {
-    console.log ("Servidor online")
+    console.log("Servidor online")
 })
 
 export default app
